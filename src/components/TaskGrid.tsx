@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Task } from "@/lib/types";
 import { TaskCard } from "./TaskCard";
+import { SaveDailyModal } from "./SaveDailyModal";
+import { useTimer } from "./TimerContext";
+import { Save, RotateCcw, Clock } from "lucide-react";
 
 export function TaskGrid() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { activeLog } = useTimer();
+  const [currentMs, setCurrentMs] = useState(0);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -19,25 +24,59 @@ export function TaskGrid() {
       const data: Task[] = await res.json();
       setTasks(data);
       setErrorMsg(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching tasks:", error);
-      setErrorMsg(error.message || "Could not connect to MongoDB server");
+      const msg = error instanceof Error ? error.message : "Could not connect to MongoDB server";
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchTasks();
+    void fetchTasks();
 
-    // Listen for custom event when a task is created
-    const handleTaskAdded = () => fetchTasks();
-    window.addEventListener("taskAdded", handleTaskAdded);
+    // Listen for custom events
+    const handleRefresh = () => {
+      void fetchTasks();
+    };
+    window.addEventListener("taskAdded", handleRefresh);
+    window.addEventListener("dailyRecordSaved", handleRefresh);
 
     return () => {
-      window.removeEventListener("taskAdded", handleTaskAdded);
+      window.removeEventListener("taskAdded", handleRefresh);
+      window.removeEventListener("dailyRecordSaved", handleRefresh);
     };
   }, [fetchTasks]);
+
+  // Update currentMs every second if a timer is active
+  useEffect(() => {
+    if (!activeLog) return;
+    setCurrentMs(Date.now());
+    const interval = setInterval(() => setCurrentMs(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [activeLog]);
+
+  // Calculate live total time today across all tasks
+  const totalTodayFormatted = useMemo(() => {
+    let totalMs = tasks.reduce((sum, t) => sum + (t.accumulatedTime || 0), 0);
+    if (activeLog) {
+      const st = activeLog.startTime;
+      let startMs = currentMs || Date.now();
+      if (st) {
+        if (typeof st === "string" || typeof st === "number") startMs = new Date(st).getTime();
+        else if (st instanceof Date) startMs = st.getTime();
+      }
+      totalMs += Math.max(0, (currentMs || Date.now()) - startMs);
+    }
+
+    const hrs = Math.floor(totalMs / 3600000);
+    const mins = Math.floor((totalMs % 3600000) / 60000);
+    const secs = Math.floor((totalMs % 60000) / 1000);
+    return `${hrs.toString().padStart(2, "0")}:${mins
+      .toString()
+      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }, [tasks, activeLog, currentMs]);
 
   if (loading) {
     return (
@@ -75,7 +114,7 @@ export function TaskGrid() {
 
   const handleGlobalReset = async () => {
     if (!confirm("Are you sure you want to reset all tracked time across all tasks? This cannot be undone.")) return;
-    
+
     try {
       const res = await fetch("/api/time-logs", { method: "DELETE" });
       if (res.ok) {
@@ -89,18 +128,44 @@ export function TaskGrid() {
   return (
     <div className="flex flex-col gap-6">
       {tasks.length > 0 && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleGlobalReset}
-            className="text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors px-3 py-1.5 rounded-full flex items-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Reset All Timers
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 px-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Today&apos;s Total Recorded Time
+              </span>
+              <span className="text-lg font-mono font-bold text-slate-900">
+                {totalTodayFormatted}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <SaveDailyModal>
+              <button
+                type="button"
+                className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 active:scale-95 cursor-pointer"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Final Recorded Time</span>
+              </button>
+            </SaveDailyModal>
+
+            <button
+              onClick={handleGlobalReset}
+              className="text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors px-3 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              title="Reset timers across all tasks"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset All</span>
+            </button>
+          </div>
         </div>
       )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {tasks.map((task) => (
           <TaskCard key={task.id} task={task} />
