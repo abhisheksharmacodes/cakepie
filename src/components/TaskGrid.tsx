@@ -128,35 +128,25 @@ export function TaskGrid() {
   return (
     <div className="flex flex-col gap-6">
       {tasks.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 px-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 px-6 rounded-3xl border border-slate-200/90 shadow-none">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+            <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <Clock className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest block mb-0.5">
                 Today&apos;s Total Recorded Time
               </span>
-              <span className="text-lg font-mono font-bold text-slate-900">
+              <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono">
                 {totalTodayFormatted}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <SaveDailyModal>
-              <button
-                type="button"
-                className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 active:scale-95 cursor-pointer"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>Save Final Recorded Time</span>
-              </button>
-            </SaveDailyModal>
-
+          <div className="flex items-center gap-2.5">
             <button
               onClick={handleGlobalReset}
-              className="text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors px-3 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-semibold bg-red-50/40 text-red-500 hover:bg-red-100/60 border border-red-200/80 transition-colors px-3.5 py-2 rounded-full flex items-center gap-1.5 cursor-pointer"
               title="Reset timers across all tasks"
             >
               <RotateCcw className="w-3.5 h-3.5" />

@@ -201,7 +201,7 @@ export function SaveDailyModal({ children }: { children?: React.ReactNode }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-full font-medium transition-all shadow-lg shadow-emerald-600/20 active:scale-95 text-sm cursor-pointer">
+          <button className="flex items-center gap-2 bg-[#059669] hover:bg-[#047857] text-white px-5 py-2.5 rounded-full font-semibold transition-all shadow-lg shadow-emerald-700/20 active:scale-95 text-sm cursor-pointer">
             <Save className="w-4 h-4" />
             <span>Save Daily Time</span>
           </button>

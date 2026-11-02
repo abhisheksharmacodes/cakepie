@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useTimer } from "./TimerContext";
 import { SaveDailyModal } from "./SaveDailyModal";
 import { Clock, BarChart3, CheckSquare, Save } from "lucide-react";
+import { AddTaskModal } from "@/components/AddTaskModal";
+import { Plus } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -31,22 +33,20 @@ export function Navbar() {
           <nav className="hidden sm:flex items-center gap-1 ml-2">
             <Link
               href="/"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                pathname === "/"
-                  ? "bg-slate-100 text-slate-900"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${pathname === "/"
+                ? "bg-slate-100 text-slate-900"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
             >
               <CheckSquare className="w-3.5 h-3.5" />
               Tasks
             </Link>
             <Link
               href="/analytics"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                pathname.startsWith("/analytics")
-                  ? "bg-slate-100 text-slate-900"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${pathname.startsWith("/analytics")
+                ? "bg-slate-100 text-slate-900"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
               Analytics
@@ -65,7 +65,7 @@ export function Navbar() {
           <SaveDailyModal>
             <button
               type="button"
-              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-3.5 py-2 rounded-full shadow-sm shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-sm shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
               title="Save final recorded time into database for today"
             >
               <Save className="w-3.5 h-3.5" />
@@ -73,6 +73,12 @@ export function Navbar() {
               <span className="sm:hidden">Save</span>
             </button>
           </SaveDailyModal>
+          <AddTaskModal>
+            <button className="flex items-center gap-2 bg-[#f97316] hover:bg-[#ea580c] text-white px-5 py-2.5 rounded-full font-medium transition-all shadow-lg shadow-orange-500/25 active:scale-95 text-sm cursor-pointer">
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>New Task</span>
+            </button>
+          </AddTaskModal>
         </div>
       </div>
     </header>
